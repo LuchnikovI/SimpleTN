@@ -1,0 +1,12 @@
+name = "SimpleTN"
+uuid = "ef591588-0aac-4ca2-8b87-606b3b61c00a"
+authors = ["Ilia Luchnikov <luchnikovilya@gmail.com>"]
+version = "0.1.0"
+
+[deps]
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[compat]
+LinearAlgebra = "1.11.0"
+Test = "1.11.0"
