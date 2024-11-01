@@ -46,8 +46,7 @@ end
 
 function LinearAlgebra.qr(
     partitioned_node::PartitionedNode,
-    q_free_index_id,
-    r_free_index_id,
+    free_index_id,
 )
     arr = permutedims(partitioned_node.arr, (
         partitioned_node.lhs_indices...,
@@ -61,7 +60,39 @@ function LinearAlgebra.qr(
     q = reshape(A(fac.Q), (partitioned_node.lhs_shape..., :))
     r = reshape(A(fac.R), (:, partitioned_node.rhs_shape...))
     (
-        Node(q, partitioned_node.lhs_axes..., q_free_index_id),
-        Node(r, r_free_index_id, partitioned_node.rhs_axes...),
+        Node(q, partitioned_node.lhs_axes..., free_index_id),
+        Node(r, free_index_id, partitioned_node.rhs_axes...),
+    )
+end
+
+find_rank(::AbstractArray{<:Any, 1}, ::Nothing) = current_rank
+find_rank(s::AbstractArray{<:Any, 1}, rank::Integer) = min(length(s), rank)
+function find_rank(s::AbstractArray{<:Number, 1}, eps::AbstractFloat)
+    s_norm = norm(s)
+    rank = length(s) - sum(sqrt.(cumsum(map(x -> (real(x) / s_norm)^2, reverse(s)))) .< eps)
+    rank
+end
+
+function LinearAlgebra.svd(
+    partitioned_node::PartitionedNode,
+    free_index_id,
+    rank_or_eps::Union{Nothing, AbstractFloat, Integer},
+)
+    arr = permutedims(partitioned_node.arr, (
+        partitioned_node.lhs_indices...,
+        partitioned_node.rhs_indices...,
+    ))
+    lhs_dim = prod(partitioned_node.lhs_shape)
+    rhs_dim = prod(partitioned_node.rhs_shape)
+    arr = reshape(arr, lhs_dim, rhs_dim)
+    fac = LinearAlgebra.svd(arr)
+    rank = find_rank(fac.S, rank_or_eps)
+    u = reshape(fac.U[:, 1:rank], (partitioned_node.lhs_shape..., :))
+    s = fac.S[1:rank]
+    vt = reshape(fac.Vt[1:rank, :], (:, partitioned_node.rhs_shape...))
+    (
+        Node(u, partitioned_node.lhs_axes..., free_index_id),
+        Node(s, free_index_id),
+        Node(vt, free_index_id, partitioned_node.rhs_axes...),
     )
 end
