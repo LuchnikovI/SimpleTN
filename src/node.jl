@@ -50,6 +50,27 @@ function change_id!(node::Node, old_id, new_id)
     end
 end
 
+function similar_identity(
+    arr::AbstractArray,
+    size::Int,
+    lhs_id,
+    rhs_id,
+)
+    new_arr = similar(arr, size, size)
+    T = eltype(arr)
+    for i in 1:size
+        for j in 1:size
+            ArrayInterface.allowed_setindex!(
+                new_arr,
+                i == j ? one(T) : zero(T),
+                i,
+                j,
+            )
+        end
+    end
+    Node(new_arr, lhs_id, rhs_id)
+end
+
 struct PartitionedNode{A<:AbstractArray}
     arr::A
     lhs_axes::Vector
