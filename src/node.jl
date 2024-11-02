@@ -42,6 +42,10 @@ function Base.show(io::IO, node::Node)
     print(io, "Node(shape=", shape, ", axes=", ids, ", array_type=", typeof(node.arr), ")")
 end
 
+function Base.:(==)(lhs::Node, rhs::Node)
+    (lhs.idxs_to_ids == rhs.idxs_to_ids) && (lhs.arr == rhs.arr)
+end
+
 array_type(::Node{A}) where {A<:AbstractArray} = A
 function change_id!(node::Node, old_id, new_id)
     if new_id in node.idxs_to_ids
