@@ -36,6 +36,12 @@ struct Node{A<:AbstractArray}
     end
 end
 
+function Base.show(io::IO, node::Node)
+    shape = size(node.arr)
+    ids = node.ids_to_idxs
+    print(io, "Node(shape=", shape, ", axes=", ids, ", array_type=", typeof(node.arr), ")")
+end
+
 array_type(::Node{A}) where {A<:AbstractArray} = A
 function change_id!(node::Node, old_id, new_id)
     if new_id in node.ids_to_idxs
