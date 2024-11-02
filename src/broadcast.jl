@@ -1,7 +1,7 @@
 function get_all_ids(nodes::Node...)
     all_ids = Set()
     for node in nodes
-        for id in node.ids_to_idxs
+        for id in node.idxs_to_ids
             push!(all_ids, id)
         end
     end
@@ -9,13 +9,13 @@ function get_all_ids(nodes::Node...)
 end
 
 function broadcast_node(node::Node, all_ids::Vector)
-    extension_ids = filter(x -> !(x in node.ids_to_idxs), all_ids)
+    extension_ids = filter(x -> !(x in node.idxs_to_ids), all_ids)
     extension_size = length(extension_ids)
     extension_shape = (1 for _ in 1:extension_size)
     old_shape = size(node.arr)
-    new_ids_to_idxs = [node.ids_to_idxs ; extension_ids]
+    new_idxs_to_ids = [node.idxs_to_ids ; extension_ids]
     new_arr = reshape(node.arr, (old_shape..., extension_shape...))
-    perms = ids_to_positions(new_ids_to_idxs, all_ids)
+    perms = ids_to_positions(new_idxs_to_ids, all_ids)
     new_arr = permutedims(new_arr, perms)
     new_arr
 end

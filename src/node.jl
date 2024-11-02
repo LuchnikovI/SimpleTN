@@ -22,7 +22,7 @@ end
 
 struct Node{A<:AbstractArray}
     arr::A
-    ids_to_idxs::Vector
+    idxs_to_ids::Vector
     Node(::A, ids...) where {A<:AbstractArray{<:Any, 0}} = throw(ZeroDimensionalArray())
     function Node(arr::A, ids...) where {A<:AbstractArray}
         array_dim = ndims(arr)
@@ -38,20 +38,20 @@ end
 
 function Base.show(io::IO, node::Node)
     shape = size(node.arr)
-    ids = node.ids_to_idxs
+    ids = node.idxs_to_ids
     print(io, "Node(shape=", shape, ", axes=", ids, ", array_type=", typeof(node.arr), ")")
 end
 
 array_type(::Node{A}) where {A<:AbstractArray} = A
 function change_id!(node::Node, old_id, new_id)
-    if new_id in node.ids_to_idxs
+    if new_id in node.idxs_to_ids
         throw(IDAlreadyExists(new_id))
     else
-        pos = findfirst(map(x -> x == old_id, node.ids_to_idxs))
+        pos = findfirst(map(x -> x == old_id, node.idxs_to_ids))
         if isnothing(pos)
             throw(BadAxisID(old_id))
         else
-            node.ids_to_idxs[pos] = new_id
+            node.idxs_to_ids[pos] = new_id
         end
     end
 end
@@ -89,9 +89,9 @@ struct PartitionedNode{A<:AbstractArray}
         A = array_type(node)
         shape = size(node.arr)
         rhs_axes = collect(ids)
-        lhs_axes = filter(x -> !(x in ids), node.ids_to_idxs)
-        rhs_indices = ids_to_positions(node.ids_to_idxs, rhs_axes)
-        lhs_indices = ids_to_positions(node.ids_to_idxs, lhs_axes)
+        lhs_axes = filter(x -> !(x in ids), node.idxs_to_ids)
+        rhs_indices = ids_to_positions(node.idxs_to_ids, rhs_axes)
+        lhs_indices = ids_to_positions(node.idxs_to_ids, lhs_axes)
         lhs_shape =[shape[i] for i in lhs_indices]
         rhs_shape =[shape[i] for i in rhs_indices]
         new{A}(node.arr, lhs_axes, lhs_indices, rhs_axes, rhs_indices, lhs_shape, rhs_shape)
@@ -105,12 +105,12 @@ function get_array(node::Node, ids...)
         throw(BadAxesNumber(axes_number, array_dim))
     else
         check_uniqueness(ids)
-        perms = ids_to_positions(node.ids_to_idxs, collect(ids))
+        perms = ids_to_positions(node.idxs_to_ids, collect(ids))
         permutedims(node.arr, perms)
     end
 end
 get_array(node::Node) = node.arr
-get_axis_names(node::Node) = deepcopy(node.ids_to_idxs)
+get_axis_names(node::Node) = deepcopy(node.idxs_to_ids)
 function Base.getindex(node::Node, ids...)
     PartitionedNode(node, ids...)
 end
