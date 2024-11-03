@@ -43,7 +43,20 @@ function Base.show(io::IO, node::Node)
 end
 
 function Base.:(==)(lhs::Node, rhs::Node)
-    (lhs.idxs_to_ids == rhs.idxs_to_ids) && (lhs.arr == rhs.arr)
+    if lhs.idxs_to_ids == rhs.idxs_to_ids
+        lhs.arr == rhs.arr
+    else
+        perm = try
+            ids_to_positions(lhs.idxs_to_ids, rhs.idxs_to_ids)
+        catch e
+            if isa(e, BadAxisID)
+                return false
+            else
+                throw(e)
+            end
+        end
+        permutedims(lhs.arr, perm) == rhs.arr
+    end
 end
 
 array_type(::Node{A}) where {A<:AbstractArray} = A
