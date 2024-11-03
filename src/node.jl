@@ -47,6 +47,15 @@ function Base.:(==)(lhs::Node, rhs::Node)
 end
 
 array_type(::Node{A}) where {A<:AbstractArray} = A
+
+function shape(node::Node)
+    shp = Dict{Any, Int}()
+    for (key, val) in zip(node.idxs_to_ids, size(node.arr))
+        shp[key] = val
+    end
+    shp
+end
+
 function change_id!(node::Node, old_id, new_id)
     if new_id in node.idxs_to_ids
         throw(IDAlreadyExists(new_id))

@@ -1,5 +1,5 @@
 module SimpleTN
-    export Node, get_array, get_axis_names, change_id!, similar_identity
+    export Node, get_array, get_axis_names, change_id!, similar_identity, shape
     using LinearAlgebra
     using ArrayInterface
     include("./exceptions.jl")
