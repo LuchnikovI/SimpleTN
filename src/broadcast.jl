@@ -22,6 +22,9 @@ end
 
 function Base.Broadcast.broadcasted(f, nodes::Node...)
     all_ids = get_all_ids(nodes...)
-    new_arr = Base.Broadcast.broadcast(f, map(x -> broadcast_node(x, all_ids), collect(nodes))...)
+    new_arr = f.(map(x -> broadcast_node(x, all_ids), collect(nodes))...)
     Node(new_arr, all_ids...)
 end
+
+Base.Broadcast.broadcasted(f, node::Node, num::Number) = Node(f.(node.arr, num), node.idxs_to_ids...)
+Base.Broadcast.broadcasted(f, num::Number, node::Node) = Node(f.(num, node.arr), node.idxs_to_ids...)

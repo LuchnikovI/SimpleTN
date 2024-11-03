@@ -69,6 +69,10 @@ function shape(node::Node)
     shp
 end
 
+function LinearAlgebra.norm(node::Node)
+    LinearAlgebra.norm(node.arr)
+end
+
 function change_id!(node::Node, old_id, new_id)
     if new_id in node.idxs_to_ids
         throw(IDAlreadyExists(new_id))
