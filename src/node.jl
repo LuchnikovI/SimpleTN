@@ -88,7 +88,7 @@ end
 
 function similar_identity(
     arr::AbstractArray,
-    size::Int,
+    size::Integer,
     lhs_id,
     rhs_id,
 )
@@ -99,6 +99,23 @@ function similar_identity(
             ArrayInterface.allowed_setindex!(
                 new_arr,
                 i == j ? one(T) : zero(T),
+                i,
+                j,
+            )
+        end
+    end
+    Node(new_arr, lhs_id, rhs_id)
+end
+
+# TODO: bad, is there a better solution?
+function identity_from_array_type(::Type{A}, size::Integer, lhs_id, rhs_id) where {ET, A<:AbstractArray{ET}}
+    T = A.name.wrapper
+    new_arr = T{ET}(undef, size, size)
+    for i in 1:size
+        for j in 1:size
+            ArrayInterface.allowed_setindex!(
+                new_arr,
+                i == j ? one(ET) : zero(ET),
                 i,
                 j,
             )
