@@ -126,10 +126,10 @@ function identity_from_array_type(::Type{A}, size::Integer, lhs_id, rhs_id) wher
     Node(new_arr, lhs_id, rhs_id)
 end
 
-function merge_axes(node::Node, new_id, ids...)
+function merge_axes(node::Node, new_id, old_ids...)
     dim = dimension(node)
     shp = size(node.arr)
-    lhs_positions = ids_to_positions(node.idxs_to_ids, collect(ids))
+    lhs_positions = ids_to_positions(node.idxs_to_ids, collect(old_ids))
     rhs_positions = filter(x -> !(x in lhs_positions), 1:dim)
     perm = [lhs_positions ; rhs_positions]
     new_shape = (prod(shp[lhs_positions]), shp[rhs_positions]...)
@@ -137,6 +137,25 @@ function merge_axes(node::Node, new_id, ids...)
     new_arr = reshape(new_arr, new_shape)
     new_idxs_to_ids = (new_id, node.idxs_to_ids[rhs_positions]...)
     node = Node(new_arr, new_idxs_to_ids...)
+end
+
+function split_axis(node::Node, old_id, new_ids_and_dims::Tuple{Any, Int}...)
+    new_shape = Int[]
+    new_idxs_to_ids = []
+    for (s, id) in zip(size(node.arr), node.idxs_to_ids)
+        if id != old_id
+            push!(new_shape, s)
+            push!(new_idxs_to_ids, id)
+        else
+            for (new_id, s) in new_ids_and_dims
+                #TODO: add proper dimensionality checking
+                push!(new_shape, s)
+                push!(new_idxs_to_ids, new_id)
+            end
+        end
+    end
+    new_arr = reshape(node.arr, new_shape...)
+    Node(new_arr, new_idxs_to_ids...)
 end
 
 struct PartitionedNode{A<:AbstractArray}
