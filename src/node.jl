@@ -69,6 +69,8 @@ function shape(node::Node)
     shp
 end
 
+dimension(node::Node) = ndims(node.arr)
+
 function LinearAlgebra.norm(node::Node)
     LinearAlgebra.norm(node.arr)
 end
@@ -122,6 +124,19 @@ function identity_from_array_type(::Type{A}, size::Integer, lhs_id, rhs_id) wher
         end
     end
     Node(new_arr, lhs_id, rhs_id)
+end
+
+function merge_axes(node::Node, new_id, ids...)
+    dim = dimension(node)
+    shp = size(node.arr)
+    lhs_positions = ids_to_positions(node.idxs_to_ids, collect(ids))
+    rhs_positions = filter(x -> !(x in lhs_positions), 1:dim)
+    perm = [lhs_positions ; rhs_positions]
+    new_shape = (prod(shp[lhs_positions]), shp[rhs_positions]...)
+    new_arr = permutedims(node.arr, perm)
+    new_arr = reshape(new_arr, new_shape)
+    new_idxs_to_ids = (new_id, node.idxs_to_ids[rhs_positions]...)
+    node = Node(new_arr, new_idxs_to_ids...)
 end
 
 struct PartitionedNode{A<:AbstractArray}
