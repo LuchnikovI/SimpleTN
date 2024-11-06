@@ -19,7 +19,7 @@ end
 function otimes(t1::AbstractArray, t2::AbstractArray)
     shape1 = size(t1)
     shape2 = size(t2)
-    reshape(reshape(t1, (:, 1)) .* reshape(t1, (1, :)), (shape1..., shape2...))
+    reshape(reshape(t1, (:, 1)) .* reshape(t2, (1, :)), (shape1..., shape2...))
 end
 
 function tensordot(t1::AbstractArray, t2::AbstractArray, axes1::Vector{Int}, axes2::Vector{Int})
