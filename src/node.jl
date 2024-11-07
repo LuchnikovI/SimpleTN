@@ -22,7 +22,7 @@ end
 
 struct Node{A<:AbstractArray}
     arr::A
-    idxs_to_ids::Vector
+    idxs_to_ids::Vector{<:Any}
     Node(::A, ids...) where {A<:AbstractArray{<:Any, 0}} = throw(ZeroDimensionalArray())
     function Node(arr::A, ids...) where {A<:AbstractArray}
         array_dim = ndims(arr)
